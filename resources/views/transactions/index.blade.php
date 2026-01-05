@@ -212,6 +212,7 @@
 
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Categoria</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Valor</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">F. Pagamento</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Data</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Descrição</th>
@@ -228,6 +229,15 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-semibold {{ $transaction->type === 'entrada' ? 'text-green-600 dark:text-emerald-400' : 'text-red-600 dark:text-rose-400' }}">
                                                 R$ {{ number_format($transaction->amount, 2, ',', '.') }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-200">
+                                                @if($transaction->paymentMethod)
+                                                    {{ $transaction->paymentMethod->name }}
+                                                @else
+                                                    <span class="text-gray-400">Não informado</span>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">

@@ -13,7 +13,7 @@ class TransactionController extends Controller
     public function index(Request $request)
 {
     $query = Transaction::where('user_id', Auth::id())
-        ->with('category');
+        ->with('category', 'paymentMethod');
 
     // Filtros
     if ($request->filled('type')) {
@@ -61,7 +61,8 @@ class TransactionController extends Controller
         'totalEntradas',
         'totalSaidas',
         'saldo',
-        'categories'
+        'categories',
+        'paymentMethods'
     ));
 }
 
