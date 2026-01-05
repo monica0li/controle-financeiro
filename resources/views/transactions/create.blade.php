@@ -26,8 +26,25 @@
                     </p>
                 </div>
 
-                <form method="POST" action="{{ route('transactions.store') }}" class="p-6">
+                <form method="POST" action="{{ route('transactions.store') }}" class="p-6" id="transaction-form">
                     @csrf
+
+                    <!-- Exibir erros de validação -->
+                    @if ($errors->any())
+                        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                            <h4 class="text-sm font-semibold text-red-800 mb-2">Corrija os seguintes erros:</h4>
+                            <ul class="text-sm text-red-600 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li class="flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ $error }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                     <div class="space-y-6">
                         <!-- Tipo -->
@@ -58,7 +75,7 @@
                         </div>
 
                         <!-- Categoria -->
-                        <div>
+                        <div id="category-section">
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 Categoria
                                 <span class="text-red-500">*</span>
@@ -67,7 +84,7 @@
                                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600" required>
                                 <option value="" class="py-2 text-gray-400">Selecione uma categoria</option>
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" class="py-2">{{ $category->name }}</option>
+                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }} class="py-2">{{ $category->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -95,19 +112,113 @@
                             </p>
                         </div>
 
-                        <!-- Categoria -->
-                        <div>
+                        <!-- Forma de Pagamento (apenas para saídas) -->
+                        <div id="payment-method-section" class="hidden">
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 Forma de Pagamento
-                                <span class="text-red-500">*</span>
                             </label>
-                            <select name="category_id" 
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600" required>
+                            <select name="payment_method_id" 
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600">
                                 <option value="" class="py-2 text-gray-400">Selecione uma forma de pagamento</option>
                                 @foreach($paymentMethods as $paymentMethod)
-                                    <option value="{{ $paymentMethod->id }}" class="py-2">{{ $paymentMethod->name }}</option>
+                                    <option value="{{ $paymentMethod->id }}" {{ old('payment_method_id') == $paymentMethod->id ? 'selected' : '' }} class="py-2">{{ $paymentMethod->name }}</option>
                                 @endforeach
                             </select>
+                        </div>
+
+                        <!-- Parcelamento (apenas para saídas) -->
+                        <div id="installment-section" class="hidden">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Quantidade de Parcelas
+                                    </label>
+                                    <select name="installments" id="installments-select"
+                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600">
+                                        @for($i = 1; $i <= 24; $i++)
+                                            <option value="{{ $i }}" {{ old('installments') == $i ? 'selected' : '' }}>{{ $i }}x</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Valor por Parcela
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 dark:text-gray-400 font-bold">R$</span>
+                                        </div>
+                                        <input type="text" 
+                                            class="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 placeholder-gray-400 dark:placeholder-gray-500 font-medium"
+                                            id="installment-amount" 
+                                            placeholder="0,00"
+                                            readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="installment-dates" class="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg hidden">
+                                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Datas das Parcelas:</h4>
+                                <div id="installment-dates-list" class="text-sm text-gray-600 dark:text-gray-400 space-y-1"></div>
+                            </div>
+                        </div>
+
+                        <!-- Recorrente/Fixo -->
+                        <div id="recurring-section" class="hidden">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center">
+                                    <div class="relative inline-block w-12 mr-3 align-middle select-none">
+                                        <input type="checkbox" name="is_recurring" id="is-recurring" 
+                                            class="sr-only toggle-checkbox" 
+                                            onchange="toggleRecurringOptions()"
+                                            value="1"
+                                            {{ old('is_recurring') ? 'checked' : '' }}>
+                                        <label for="is-recurring" class="block h-6 w-12 cursor-pointer bg-gray-300 dark:bg-gray-700 rounded-full transition-all duration-300"></label>
+                                        <span class="absolute left-1 top-1 bg-white dark:bg-gray-300 w-4 h-4 rounded-full transition-transform duration-300"></span>
+                                    </div>
+                                    <div>
+                                        <label for="is-recurring" class="text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer">
+                                            Esta é uma despesa fixa/recorrente
+                                        </label>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            Ex: Aluguel, internet, assinaturas
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Opções de recorrencia (escondidas inicialmente) -->
+                            <div id="recurring-options" class="hidden space-y-4 mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Frequência
+                                            <span class="text-red-500">*</span>
+                                        </label>
+                                        <select name="recurring_frequency" 
+                                            class="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 text-gray-900 dark:text-gray-200 transition-all duration-200">
+                                            <option value="">Selecione</option>
+                                            <option value="mensal" {{ old('recurring_frequency') == 'mensal' ? 'selected' : '' }}>Mensal</option>
+                                            <option value="semanal" {{ old('recurring_frequency') == 'semanal' ? 'selected' : '' }}>Semanal</option>
+                                            <option value="quinzenal" {{ old('recurring_frequency') == 'quinzenal' ? 'selected' : '' }}>Quinzenal</option>
+                                            <option value="anual" {{ old('recurring_frequency') == 'anual' ? 'selected' : '' }}>Anual</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Até (opcional)
+                                        </label>
+                                        <input type="date" name="recurring_until" 
+                                            class="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 text-gray-900 dark:text-gray-200 transition-all duration-200"
+                                            value="{{ old('recurring_until') }}">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-blue-600 dark:text-blue-400">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Esta transação será considerada no planejamento mensal como despesa fixa.
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Data -->
@@ -120,12 +231,9 @@
                                 <input type="date" name="date" 
                                     class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
                                     required
-                                    value="{{ date('Y-m-d') }}"
+                                    value="{{ old('date', date('Y-m-d')) }}"
                                     min="1900-01-01" 
                                     max="2099-12-31">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-
-                                </div>
                             </div>
                         </div>
 
@@ -137,10 +245,10 @@
                             <textarea id="description" maxlength="255" 
                                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 resize-none min-h-[100px] hover:border-gray-300 dark:hover:border-gray-600"
                                 name="description" 
-                                placeholder="Descreva a movimentação..."></textarea>
+                                placeholder="Descreva a movimentação...">{{ old('description') }}</textarea>
                             <div class="flex justify-between items-center mt-3">
                                 <div id="counter" class="text-sm font-medium px-3 py-1 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-lg">
-                                    0/255 caracteres
+                                    {{ strlen(old('description', '')) }}/255 caracteres
                                 </div>
                                 <span class="text-xs text-gray-500 dark:text-gray-400">
                                     Máximo 255 caracteres
@@ -190,18 +298,110 @@ function selectType(type) {
         
         saidaBtn.classList.add('border-gray-200', 'dark:border-gray-700');
         saidaBtn.classList.remove('border-red-500', 'bg-red-50', 'text-red-700', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-500');
+        
+        // Ocultar seções para entradas
+        document.getElementById('payment-method-section').classList.add('hidden');
+        document.getElementById('installment-section').classList.add('hidden');
+        document.getElementById('recurring-section').classList.add('hidden');
+        
     } else {
         saidaBtn.classList.add('border-red-500', 'bg-red-50', 'text-red-700', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-500');
         saidaBtn.classList.remove('border-gray-200', 'dark:border-gray-700');
         
         entradaBtn.classList.add('border-gray-200', 'dark:border-gray-700');
         entradaBtn.classList.remove('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-900/30', 'dark:text-emerald-300', 'dark:border-emerald-500');
+        
+        // Mostrar seções para saídas
+        document.getElementById('payment-method-section').classList.remove('hidden');
+        document.getElementById('installment-section').classList.remove('hidden');
+        document.getElementById('recurring-section').classList.remove('hidden');
+        
+        // Calcular parcelas
+        calculateInstallments();
+    }
+}
+
+// Calcular parcelas
+function calculateInstallments() {
+    const amountInput = document.getElementById('amount');
+    const installmentsSelect = document.getElementById('installments-select');
+    const installmentAmount = document.getElementById('installment-amount');
+    const installmentDatesList = document.getElementById('installment-dates-list');
+    const installmentDates = document.getElementById('installment-dates');
+    
+    if (!amountInput || !installmentsSelect || !installmentAmount) return;
+    
+    const amountValue = parseFloat(amountInput.value.replace(/[^\d,]/g, '').replace(',', '.'));
+    const installments = parseInt(installmentsSelect.value);
+    
+    if (isNaN(amountValue) || amountValue <= 0) {
+        installmentAmount.value = '0,00';
+        installmentDates.classList.add('hidden');
+        return;
+    }
+    
+    const installmentValue = amountValue / installments;
+    installmentAmount.value = installmentValue.toFixed(2).replace('.', ',');
+    
+    // Gerar datas das parcelas
+    if (installments > 1) {
+        const dateInput = document.querySelector('input[name="date"]');
+        const startDate = new Date(dateInput.value);
+        const dates = [];
+        
+        for (let i = 0; i < installments; i++) {
+            const installmentDate = new Date(startDate);
+            installmentDate.setMonth(installmentDate.getMonth() + i);
+            
+            const formattedDate = installmentDate.toLocaleDateString('pt-BR');
+            dates.push(`<div>${i + 1}ª parcela: ${formattedDate}</div>`);
+        }
+        
+        installmentDatesList.innerHTML = dates.join('');
+        installmentDates.classList.remove('hidden');
+    } else {
+        installmentDates.classList.add('hidden');
+    }
+}
+
+// Alternar opções de recorrencia
+function toggleRecurringOptions() {
+    const recurringCheckbox = document.getElementById('is-recurring');
+    const recurringOptions = document.getElementById('recurring-options');
+    const frequencySelect = document.querySelector('select[name="recurring_frequency"]');
+    
+    if (recurringCheckbox.checked) {
+        recurringOptions.classList.remove('hidden');
+        if (frequencySelect) frequencySelect.required = true;
+    } else {
+        recurringOptions.classList.add('hidden');
+        if (frequencySelect) frequencySelect.required = false;
     }
 }
 
 // Inicializar com saída selecionada
 document.addEventListener('DOMContentLoaded', function() {
     selectType('saida');
+    
+    // Adicionar listeners para cálculos de parcelas
+    const amountInput = document.getElementById('amount');
+    const installmentsSelect = document.getElementById('installments-select');
+    const dateInput = document.querySelector('input[name="date"]');
+    
+    if (amountInput && installmentsSelect) {
+        amountInput.addEventListener('input', calculateInstallments);
+        installmentsSelect.addEventListener('change', calculateInstallments);
+    }
+    
+    if (dateInput && installmentsSelect) {
+        dateInput.addEventListener('change', calculateInstallments);
+    }
+    
+    // Verificar se recorrente estava marcado e mostrar opções
+    const recurringCheckbox = document.getElementById('is-recurring');
+    if (recurringCheckbox && recurringCheckbox.checked) {
+        toggleRecurringOptions();
+    }
 });
 
 // Contador de caracteres
@@ -211,7 +411,6 @@ textarea.addEventListener('input', () => {
     const length = textarea.value.length;
     counter.textContent = `${length}/255 caracteres`;
     
-    // Mudar cor quando estiver perto do limite
     if (length > 200) {
         counter.classList.add('text-red-500', 'dark:text-red-400');
         counter.classList.remove('text-gray-700', 'dark:text-gray-300');
@@ -228,23 +427,19 @@ const maxAmount = 1000000;
 amountInput.addEventListener('input', function(e) {
     let value = this.value.replace(/\D/g, '');
     
-    // Limitar ao máximo
     if (parseInt(value) > maxAmount * 100) {
         value = (maxAmount * 100).toString();
     }
 
-    // Formatar em reais (só se tiver valor)
     if (value) {
         value = (parseInt(value) / 100).toFixed(2);
         this.value = value.replace('.', ',');
-        
-        // Adicionar R$ apenas na exibição, mas mantém no formato numérico para o backend
-        this.value = this.value;
     } else {
         this.value = '';
     }
 
     document.getElementById('amount-error').textContent = '';
+    calculateInstallments(); // Calcular parcelas ao digitar
 });
 
 // Focar no primeiro campo
@@ -265,3 +460,12 @@ amountInput.addEventListener('blur', function() {
     }
 });
 </script>
+
+<style>
+.toggle-checkbox:checked + label {
+    background-color: #3b82f6;
+}
+.toggle-checkbox:checked + label + span {
+    transform: translateX(1.5rem);
+}
+</style>
