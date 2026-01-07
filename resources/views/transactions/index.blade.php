@@ -194,9 +194,6 @@
                                     Forma de Pagamento
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Parcelas
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Recorrente
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -218,6 +215,11 @@
                                     <td class="px-6 py-4">
                                         <div class="text-sm text-gray-900 dark:text-gray-200">
                                             {{ $transaction->description }}
+                                            @if($transaction->installments > 1)
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                {{ $transaction->current_installment }}/{{ $transaction->installments }}
+                                            </span>
+                                            @endif
                                         </div>
                                     </td>
 
@@ -225,7 +227,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900 dark:text-gray-200">
                                             @if($transaction->is_investment)
-                                                <span class="text-blue-600 dark:text-blue-400">Investimento</span>
+                                                <span>Investimento</span>
                                             @else
                                                 {{ $transaction->category->name ?? '-' }}
                                             @endif
@@ -235,25 +237,8 @@
                                     <!-- Forma de Pagamento -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900 dark:text-gray-200">
-                                            @if($transaction->is_investment)
-                                                <span class="text-blue-600 dark:text-blue-400">—</span>
-                                            @else
-                                                {{ $transaction->paymentMethod->name ?? '-' }}
-                                            @endif
+                                                {{ $transaction->paymentMethod->name ?? '—' }}
                                         </div>
-                                    </td>
-
-                                    <!-- Parcelas -->
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($transaction->installments > 1 && !$transaction->is_investment)
-                                            <div class="flex items-center">
-                                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                                                    {{ $transaction->current_installment }}/{{ $transaction->installments }}
-                                                </span>
-                                            </div>
-                                        @else
-                                            <span class="text-gray-400">—</span>
-                                        @endif
                                     </td>
 
                                     <!-- Recorrente -->

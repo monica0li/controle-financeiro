@@ -227,7 +227,7 @@ class TransactionController extends Controller
                 'type' => 'saida',
                 'amount' => $installmentAmount,
                 'date' => $installmentDate->format('Y-m-d'),
-                'description' => $request->description . " ({$i}/{$installments})",
+                'description' => $request->description,
                 'installments' => $installments,
                 'current_installment' => $i,
                 'installment_group_id' => $installmentGroupId,
