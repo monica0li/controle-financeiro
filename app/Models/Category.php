@@ -3,14 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Transaction;
-
 
 class Category extends Model
 {
+    protected $fillable = [
+        'name',
+        'active'
+    ];
+
+    protected $casts = [
+        'active' => 'boolean'
+    ];
+
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
     }
-
 }

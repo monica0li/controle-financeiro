@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\PaymentMethodsController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -51,6 +53,27 @@ Route::get('/check-transaction-columns', function() {
         }
     }
     echo "</ul>";
+});
+// Rotas para Categorias
+Route::prefix('categories')->name('categories.')->group(function () {
+    Route::get('/', [CategoriesController::class, 'index'])->name('index');
+    Route::get('/create', [CategoriesController::class, 'create'])->name('create');
+    Route::post('/', [CategoriesController::class, 'store'])->name('store');
+    Route::get('/{category}/edit', [CategoriesController::class, 'edit'])->name('edit');
+    Route::put('/{category}', [CategoriesController::class, 'update'])->name('update');
+    Route::delete('/{category}', [CategoriesController::class, 'destroy'])->name('destroy');
+    Route::post('/{category}/activate', [CategoriesController::class, 'activate'])->name('activate');
+});
+
+// Rotas para Formas de Pagamento
+Route::prefix('payment-methods')->name('payment-methods.')->group(function () {
+    Route::get('/', [PaymentMethodsController::class, 'index'])->name('index');
+    Route::get('/create', [PaymentMethodsController::class, 'create'])->name('create');
+    Route::post('/', [PaymentMethodsController::class, 'store'])->name('store');
+    Route::get('/{paymentMethod}/edit', [PaymentMethodsController::class, 'edit'])->name('edit');
+    Route::put('/{paymentMethod}', [PaymentMethodsController::class, 'update'])->name('update');
+    Route::delete('/{paymentMethod}', [PaymentMethodsController::class, 'destroy'])->name('destroy');
+    Route::post('/{paymentMethod}/activate', [PaymentMethodsController::class, 'activate'])->name('activate');
 });
 
 require __DIR__.'/auth.php';

@@ -10,92 +10,90 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
-    {
-        $query = Transaction::where('user_id', Auth::id())
-            ->with('category', 'paymentMethod');
+public function index(Request $request)
+{
+    // Query BASE (sem paginação) para os totais e contagens
+    $baseQuery = Transaction::where('user_id', Auth::id());
 
-        // Filtros
-        // Depois de todos os outros filtros existentes (categoria, data, busca, etc.)
-        // MAS ANTES do ->paginate()
-            
-        // Filtro por tipo (maneira mais simples)
-        if ($request->filled('type')) {
-            if ($request->type === 'investimento') {
-                $query->where('is_investment', true);
-            } else {
-                $query->where('type', $request->type)
-                      ->where('is_investment', false);
-            }
+    // Aplicar os mesmos filtros na query base
+    if ($request->filled('type')) {
+        if ($request->type === 'investimento') {
+            $baseQuery->where('is_investment', true);
         } else {
-            // Por padrão, mostrar tudo (incluindo investimentos)
-            // Ou se quiser não mostrar investimentos por padrão:
-            // $query->where('is_investment', false);
+            $baseQuery->where('type', $request->type)
+                      ->where('is_investment', false);
         }
-
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        if ($request->filled('payment_method_id')) {
-            $query->where('payment_method_id', $request->payment_method_id);
-        }
-
-        if ($request->filled('start_date')) {
-            $query->whereDate('date', '>=', $request->start_date);
-        }
-
-        if ($request->filled('end_date')) {
-            $query->whereDate('date', '<=', $request->end_date);
-        }
-
-        if ($request->filled('search')) {
-            $query->where('description', 'like', '%' . $request->search . '%');
-        }
-
-        $transactions = $query
-            ->orderBy('date', 'desc')
-            ->paginate(10)
-            ->withQueryString();
-
-        $totalEntradas = Transaction::where('user_id', Auth::id())
-            ->where('type', 'entrada')
-            ->sum('amount');
-
-        $totalSaidas = Transaction::where('user_id', Auth::id())
-            ->where('type', 'saida')
-            ->sum('amount');
-
-        $totalInvestimentos = Transaction::where('user_id', Auth::id())
-            ->where('is_investment', true)
-            ->sum('amount');
-
-        // Saídas normais (excluindo investimentos)
-        $totalSaidasNormais = Transaction::where('user_id', Auth::id())
-            ->where('type', 'saida')
-            ->where('is_investment', false)
-            ->sum('amount');
-
-        $saldo = $totalEntradas - ($totalSaidasNormais + $totalInvestimentos);
-
-        $categories = Category::orderBy('name')->get();
-        $paymentMethods = PaymentMethod::orderBy('name')->get();
-
-        return view('transactions.index', compact(
-            'transactions',
-            'totalEntradas',
-            'totalSaidas', // Mantém o total de todas as saídas (incluindo investimentos)
-            'totalSaidasNormais', // Saídas que não são investimentos
-            'totalInvestimentos', // ← NOVO
-            'saldo',
-            'categories',
-            'paymentMethods'
-        ));
     }
 
+    if ($request->filled('category_id')) {
+        $baseQuery->where('category_id', $request->category_id);
+    }
+
+    if ($request->filled('payment_method_id')) {
+        $baseQuery->where('payment_method_id', $request->payment_method_id);
+    }
+
+    if ($request->filled('start_date')) {
+        $baseQuery->whereDate('date', '>=', $request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $baseQuery->whereDate('date', '<=', $request->end_date);
+    }
+
+    if ($request->filled('search')) {
+        $baseQuery->where('description', 'like', '%' . $request->search . '%');
+    }
+
+    // Query SEPARADA para paginação (com with())
+    $paginationQuery = clone $baseQuery;
+    
+    $transactions = $paginationQuery
+        ->with('category', 'paymentMethod')
+        ->orderBy('date', 'desc')
+        ->paginate(10)
+        ->withQueryString();
+
+    // Calcular os totais usando a query BASE (sem paginação)
+    $allTransactions = $baseQuery->get(); // ← Isso trará TODAS as transações filtradas, sem paginação
+
+    // Calcular totais usando a coleção completa
+    $totalEntradas = $allTransactions->where('type', 'entrada')->sum('amount');
+    
+    $totalSaidas = $allTransactions->where('type', 'saida')->sum('amount');
+    
+    $totalInvestimentos = $allTransactions->where('is_investment', true)->sum('amount');
+    
+    $totalSaidasNormais = $allTransactions->where('type', 'saida')
+                                          ->where('is_investment', false)
+                                          ->sum('amount');
+
+    $saldo = $totalEntradas - ($totalSaidasNormais + $totalInvestimentos);
+
+    // Contagens usando a coleção completa
+    $entradasCount = $allTransactions->where('type', 'entrada')->count();
+    $saidasNormaisCount = $allTransactions->where('type', 'saida')
+                                          ->where('is_investment', false)
+                                          ->count();
+    $investCount = $allTransactions->where('is_investment', true)->count();
+
+    $categories = Category::orderBy('name')->get();
+    $paymentMethods = PaymentMethod::orderBy('name')->get();
+
+    return view('transactions.index', compact(
+        'transactions',          // ← Paginado (para a tabela)
+        'totalEntradas',
+        'totalSaidas',
+        'totalSaidasNormais',
+        'totalInvestimentos',
+        'saldo',
+        'categories',
+        'paymentMethods',
+        'entradasCount',        // ← Contagem completa
+        'saidasNormaisCount',   // ← Contagem completa  
+        'investCount'           // ← Contagem completa
+    ));
+}
     /**
      * Show the form for creating a new resource.
      */

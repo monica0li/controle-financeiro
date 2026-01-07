@@ -23,75 +23,72 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Cards de Resumo -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Saldo Atual -->
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Saldo Atual</h3>
-                        <svg class="w-8 h-8 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <p class="text-3xl font-bold {{ $saldo >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                        R$ {{ number_format($saldo, 2, ',', '.') }}
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        {{ $saldo >= 0 ? 'Positivo' : 'Negativo' }}
-                    </p>
-                </div>
+<!-- Cards de Resumo -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Saldo Atual -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Saldo Atual</h3>
+            <svg class="w-8 h-8 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <p class="text-3xl font-bold {{ $saldo >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+            R$ {{ number_format($saldo, 2, ',', '.') }}
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {{ $saldo >= 0 ? 'Positivo' : 'Negativo' }}
+        </p>
+    </div>
 
-                <!-- Total Entradas -->
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Entradas</h3>
-                        <svg class="w-8 h-8 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                        </svg>
-                    </div>
-                    <p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                        R$ {{ number_format($totalEntradas, 2, ',', '.') }}
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        {{ $transactions->where('type', 'entrada')->count() }} transações
-                    </p>
-                </div>
+    <!-- Total Entradas -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Entradas</h3>
+            <svg class="w-8 h-8 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+            </svg>
+        </div>
+        <p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+            R$ {{ number_format($totalEntradas, 2, ',', '.') }}
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {{ $entradasCount }} {{ $entradasCount == 1 ? 'transação' : 'transações' }}
+        </p>
+    </div>
 
-                <!-- Total Saídas -->
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Saídas</h3>
-                        <svg class="w-8 h-8 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                        </svg>
-                    </div>
-                    <p class="text-3xl font-bold text-red-600 dark:text-red-400">
-                        R$ {{ number_format($totalSaidasNormais, 2, ',', '.') }}
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        {{ $transactions->where('type', 'saida')->where('is_investment', false)->count() }} transações
-                    </p>
-                </div>
+    <!-- Total Saídas -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Saídas</h3>
+            <svg class="w-8 h-8 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </div>
+        <p class="text-3xl font-bold text-red-600 dark:text-red-400">
+            R$ {{ number_format($totalSaidasNormais, 2, ',', '.') }}
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {{ $saidasNormaisCount }} {{ $saidasNormaisCount == 1 ? 'transação' : 'transações' }}
+        </p>
+    </div>
 
-                <!-- Total Investimentos -->
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Investimentos</h3>
-                        <svg class="w-8 h-8 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                        R$ {{ number_format($totalInvestimentos, 2, ',', '.') }}
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        @php
-                            $investCount = $transactions->where('is_investment', true)->count();
-                        @endphp
-                        {{ $investCount }} {{ $investCount == 1 ? 'transação' : 'transações' }}
-                    </p>
-                </div>
-            </div>
+    <!-- Total Investimentos -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Investimentos</h3>
+            <svg class="w-8 h-8 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+            R$ {{ number_format($totalInvestimentos, 2, ',', '.') }}
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {{ $investCount }} {{ $investCount == 1 ? 'transação' : 'transações' }}
+        </p>
+    </div>
+</div>
 
             <!-- Filtros -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-8 border border-gray-200 dark:border-gray-700">
