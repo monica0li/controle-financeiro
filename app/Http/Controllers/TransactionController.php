@@ -19,8 +19,21 @@ class TransactionController extends Controller
             ->with('category', 'paymentMethod');
 
         // Filtros
+        // Depois de todos os outros filtros existentes (categoria, data, busca, etc.)
+        // MAS ANTES do ->paginate()
+            
+        // Filtro por tipo (maneira mais simples)
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            if ($request->type === 'investimento') {
+                $query->where('is_investment', true);
+            } else {
+                $query->where('type', $request->type)
+                      ->where('is_investment', false);
+            }
+        } else {
+            // Por padrão, mostrar tudo (incluindo investimentos)
+            // Ou se quiser não mostrar investimentos por padrão:
+            // $query->where('is_investment', false);
         }
 
         if ($request->filled('category_id')) {
@@ -56,7 +69,17 @@ class TransactionController extends Controller
             ->where('type', 'saida')
             ->sum('amount');
 
-        $saldo = $totalEntradas - $totalSaidas;
+        $totalInvestimentos = Transaction::where('user_id', Auth::id())
+            ->where('is_investment', true)
+            ->sum('amount');
+
+        // Saídas normais (excluindo investimentos)
+        $totalSaidasNormais = Transaction::where('user_id', Auth::id())
+            ->where('type', 'saida')
+            ->where('is_investment', false)
+            ->sum('amount');
+
+        $saldo = $totalEntradas - ($totalSaidasNormais + $totalInvestimentos);
 
         $categories = Category::orderBy('name')->get();
         $paymentMethods = PaymentMethod::orderBy('name')->get();
@@ -64,7 +87,9 @@ class TransactionController extends Controller
         return view('transactions.index', compact(
             'transactions',
             'totalEntradas',
-            'totalSaidas',
+            'totalSaidas', // Mantém o total de todas as saídas (incluindo investimentos)
+            'totalSaidasNormais', // Saídas que não são investimentos
+            'totalInvestimentos', // ← NOVO
             'saldo',
             'categories',
             'paymentMethods'
@@ -95,7 +120,7 @@ class TransactionController extends Controller
         
         // Validações básicas
         $validated = $request->validate([
-            'type' => 'required|in:entrada,saida',
+            'type' => 'required|in:entrada,saida,investimento',
             'category_id' => 'required|exists:categories,id',
             'date' => 'required|date',
             'description' => 'nullable|string|max:255',
@@ -137,12 +162,18 @@ class TransactionController extends Controller
             $this->createInstallments($request, $installments, $amount);
             $message = "Transação parcelada criada com sucesso! ({$installments} parcelas)";
         } else {
+            // Verificar se é investimento
+            $isInvestment = $request->type === 'investimento';
+
+            // Para investimentos, o type no banco é 'saida' mas marcamos como investimento
+            $type = $isInvestment ? 'saida' : $request->type;
+
             // Criar transação única
             Transaction::create([
                 'user_id' => Auth::id(),
                 'category_id' => $request->category_id,
-                'payment_method_id' => $request->type === 'saida' ? $request->payment_method_id : null,
-                'type' => $request->type,
+                'payment_method_id' => $request->type === 'saida' || $isInvestment ? $request->payment_method_id : null,
+                'type' => $type,
                 'amount' => $amount,
                 'date' => $request->date,
                 'description' => $request->description,
@@ -151,6 +182,7 @@ class TransactionController extends Controller
                 'is_recurring' => $request->has('is_recurring') ? 1 : 0,
                 'recurring_frequency' => $request->recurring_frequency,
                 'recurring_until' => $request->recurring_until,
+                'is_investment' => $isInvestment, // ← NOVO CAMPO
             ]);
             $message = 'Movimentação criada com sucesso!';
         }

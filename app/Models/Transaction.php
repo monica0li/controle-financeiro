@@ -21,6 +21,7 @@ class Transaction extends Model
         'is_recurring',
         'recurring_frequency',
         'recurring_until',
+        'is_investment',
     ];
 
     protected $casts = [
@@ -30,6 +31,7 @@ class Transaction extends Model
         'current_installment' => 'integer',
         'is_recurring' => 'boolean',
         'recurring_until' => 'date',
+        'is_investment' => 'boolean', // ← ADICIONE ESTA LINHA
     ];
 
     public function user()
@@ -69,5 +71,17 @@ class Transaction extends Model
         return self::where('installment_group_id', $this->installment_group_id)
             ->orderBy('current_installment')
             ->get();
+    }
+
+        // Scope para investimentos
+    public function scopeInvestments($query)
+    {
+        return $query->where('is_investment', true);
+    }
+    
+    // Verificar se é investimento
+    public function getIsInvestmentAttribute()
+    {
+        return (bool) $this->attributes['is_investment'] ?? false;
     }
 }

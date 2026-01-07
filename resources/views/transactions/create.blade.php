@@ -53,7 +53,7 @@
                                 Tipo de Movimentação
                                 <span class="text-red-500">*</span>
                             </label>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-3 gap-4"> <!-- Mudou de 2 para 3 -->
                                 <button type="button" id="entrada-btn"
                                     class="flex items-center justify-center px-4 py-3 border-2 rounded-xl font-medium transition-all duration-300"
                                     onclick="selectType('entrada')">
@@ -69,6 +69,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                                     </svg>
                                     Saída
+                                </button>
+                                <button type="button" id="investimento-btn"
+                                    class="flex items-center justify-center px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl font-medium transition-all duration-300"
+                                    onclick="selectType('investimento')">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Investimento
                                 </button>
                             </div>
                             <input type="hidden" name="type" id="type-input" value="saida" required>
@@ -288,28 +296,34 @@
 function selectType(type) {
     const entradaBtn = document.getElementById('entrada-btn');
     const saidaBtn = document.getElementById('saida-btn');
+    const investimentoBtn = document.getElementById('investimento-btn'); // ← NOVA VARIÁVEL
     const typeInput = document.getElementById('type-input');
     
     typeInput.value = type;
     
+    // Resetar todos os botões
+    [entradaBtn, saidaBtn, investimentoBtn].forEach(btn => {
+        btn.classList.remove(
+            'border-emerald-500', 'bg-emerald-50', 'text-emerald-700',
+            'dark:bg-emerald-900/30', 'dark:text-emerald-300', 'dark:border-emerald-500',
+            'border-red-500', 'bg-red-50', 'text-red-700',
+            'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-500'
+        );
+        btn.classList.add('border-gray-200', 'dark:border-gray-700');
+    });
+    
     if (type === 'entrada') {
         entradaBtn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-900/30', 'dark:text-emerald-300', 'dark:border-emerald-500');
         entradaBtn.classList.remove('border-gray-200', 'dark:border-gray-700');
-        
-        saidaBtn.classList.add('border-gray-200', 'dark:border-gray-700');
-        saidaBtn.classList.remove('border-red-500', 'bg-red-50', 'text-red-700', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-500');
         
         // Ocultar seções para entradas
         document.getElementById('payment-method-section').classList.add('hidden');
         document.getElementById('installment-section').classList.add('hidden');
         document.getElementById('recurring-section').classList.add('hidden');
         
-    } else {
+    } else if (type === 'saida') {
         saidaBtn.classList.add('border-red-500', 'bg-red-50', 'text-red-700', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-500');
         saidaBtn.classList.remove('border-gray-200', 'dark:border-gray-700');
-        
-        entradaBtn.classList.add('border-gray-200', 'dark:border-gray-700');
-        entradaBtn.classList.remove('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-900/30', 'dark:text-emerald-300', 'dark:border-emerald-500');
         
         // Mostrar seções para saídas
         document.getElementById('payment-method-section').classList.remove('hidden');
@@ -318,6 +332,15 @@ function selectType(type) {
         
         // Calcular parcelas
         calculateInstallments();
+        
+    } else if (type === 'investimento') {
+        investimentoBtn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700', 'dark:bg-blue-900/30', 'dark:text-blue-300', 'dark:border-blue-500'); // ← NOVO ESTILO
+        investimentoBtn.classList.remove('border-gray-200', 'dark:border-gray-700');
+        
+        // Mostrar forma de pagamento, mas não parcelas
+        document.getElementById('payment-method-section').classList.remove('hidden');
+        document.getElementById('installment-section').classList.add('hidden'); // Investimentos não parcelam
+        document.getElementById('recurring-section').classList.add('hidden'); // Não faz sentido investimento recorrente
     }
 }
 
