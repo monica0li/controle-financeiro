@@ -53,7 +53,7 @@
                                 Tipo de Movimentação
                                 <span class="text-red-500">*</span>
                             </label>
-                            <div class="grid grid-cols-3 gap-4"> <!-- Mudou de 2 para 3 -->
+                            <div class="grid grid-cols-3 gap-4">
                                 <button type="button" id="entrada-btn"
                                     class="flex items-center justify-center px-4 py-3 border-2 rounded-xl font-medium transition-all duration-300"
                                     onclick="selectType('entrada')">
@@ -80,25 +80,30 @@
                                 </button>
                             </div>
                             <input type="hidden" name="type" id="type-input" value="saida" required>
+                            <input type="hidden" name="is_investment" id="is-investment-input" value="0">
                         </div>
 
-                        <!-- Categoria -->
-                        <div id="category-section">
+                        <!-- Descrição (REORDENADO - agora vem primeiro) -->
+                        <div id="description-section">
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Categoria
-                                <span class="text-red-500">*</span>
+                                Descrição
                             </label>
-                            <select name="category_id" 
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600" required>
-                                <option value="" class="py-2 text-gray-400">Selecione uma categoria</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }} class="py-2">{{ $category->name }}</option>
-                                @endforeach
-                            </select>
+                            <textarea id="description" maxlength="255" 
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 resize-none min-h-[100px] hover:border-gray-300 dark:hover:border-gray-600"
+                                name="description" 
+                                placeholder="Descreva a movimentação...">{{ old('description') }}</textarea>
+                            <div class="flex justify-between items-center mt-3">
+                                <div id="counter" class="text-sm font-medium px-3 py-1 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-lg">
+                                    {{ strlen(old('description', '')) }}/255 caracteres
+                                </div>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">
+                                    Máximo 255 caracteres
+                                </span>
+                            </div>
                         </div>
 
-                        <!-- Valor -->
-                        <div>
+                        <!-- Valor (REORDENADO - segundo) -->
+                        <div id="amount-section">
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 Valor
                                 <span class="text-red-500">*</span>
@@ -120,7 +125,7 @@
                             </p>
                         </div>
 
-                        <!-- Forma de Pagamento (apenas para saídas) -->
+                        <!-- Forma de Pagamento (REORDENADO - terceiro) -->
                         <div id="payment-method-section" class="hidden">
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 Forma de Pagamento
@@ -132,6 +137,39 @@
                                     <option value="{{ $paymentMethod->id }}" {{ old('payment_method_id') == $paymentMethod->id ? 'selected' : '' }} class="py-2">{{ $paymentMethod->name }}</option>
                                 @endforeach
                             </select>
+                        </div>
+
+                        <!-- Categoria (REORDENADO - quarto) -->
+                        <div id="category-section">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Categoria
+                                <span class="text-red-500 required-star">*</span>
+                            </label>
+                            <select name="category_id" id="category-select"
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
+                                required>
+                                <option value="" class="py-2 text-gray-400">Selecione uma categoria</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }} class="py-2">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Data (REORDENADO - quinto) -->
+                        <div id="date-section">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Data
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="date" name="date" 
+                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
+                                    required
+                                    value="{{ old('date', now()->setTimezone('America/Sao_Paulo')->format('Y-m-d')) }}"
+                                    min="1900-01-01" 
+                                    max="2099-12-31"
+                                    id="date-input">
+                            </div>
                         </div>
 
                         <!-- Parcelamento (apenas para saídas) -->
@@ -229,41 +267,6 @@
                             </div>
                         </div>
 
-                        <!-- Data -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Data
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <input type="date" name="date" 
-                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
-                                    required
-                                    value="{{ old('date', date('Y-m-d')) }}"
-                                    min="1900-01-01" 
-                                    max="2099-12-31">
-                            </div>
-                        </div>
-
-                        <!-- Descrição -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Descrição
-                            </label>
-                            <textarea id="description" maxlength="255" 
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 resize-none min-h-[100px] hover:border-gray-300 dark:hover:border-gray-600"
-                                name="description" 
-                                placeholder="Descreva a movimentação...">{{ old('description') }}</textarea>
-                            <div class="flex justify-between items-center mt-3">
-                                <div id="counter" class="text-sm font-medium px-3 py-1 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-lg">
-                                    {{ strlen(old('description', '')) }}/255 caracteres
-                                </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                    Máximo 255 caracteres
-                                </span>
-                            </div>
-                        </div>
-
                         <!-- Botões de ação -->
                         <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
                             <div class="flex flex-col sm:flex-row gap-3">
@@ -292,67 +295,159 @@
 </x-app-layout>
 
 <script>
-// Seleção de tipo (entrada/saída)
+// Seleção de tipo (entrada/saída/investimento)
 function selectType(type) {
     const entradaBtn = document.getElementById('entrada-btn');
     const saidaBtn = document.getElementById('saida-btn');
-    const investimentoBtn = document.getElementById('investimento-btn'); // ← NOVA VARIÁVEL
+    const investimentoBtn = document.getElementById('investimento-btn');
     const typeInput = document.getElementById('type-input');
+    const isInvestmentInput = document.getElementById('is-investment-input');
+    const categorySelect = document.getElementById('category-select');
+    const paymentMethodSelect = document.querySelector('select[name="payment_method_id"]');
+    const requiredStar = document.querySelector('.required-star');
     
-    typeInput.value = type;
-    
-    // Resetar todos os botões
+    // Resetar todos os botões para o estado inativo
     [entradaBtn, saidaBtn, investimentoBtn].forEach(btn => {
         btn.classList.remove(
             'border-emerald-500', 'bg-emerald-50', 'text-emerald-700',
             'dark:bg-emerald-900/30', 'dark:text-emerald-300', 'dark:border-emerald-500',
             'border-red-500', 'bg-red-50', 'text-red-700',
-            'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-500'
+            'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-500',
+            'border-blue-500', 'bg-blue-50', 'text-blue-700',
+            'dark:bg-blue-900/30', 'dark:text-blue-300', 'dark:border-blue-500'
         );
         btn.classList.add('border-gray-200', 'dark:border-gray-700');
     });
     
+    // Configurar inputs baseados no tipo
     if (type === 'entrada') {
+        typeInput.value = 'entrada';
+        isInvestmentInput.value = '0';
+        
         entradaBtn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-900/30', 'dark:text-emerald-300', 'dark:border-emerald-500');
         entradaBtn.classList.remove('border-gray-200', 'dark:border-gray-700');
         
-        // Ocultar seções para entradas
+        // Para entradas: mostrar apenas valor, data e descrição
         document.getElementById('payment-method-section').classList.add('hidden');
+        document.getElementById('category-section').classList.add('hidden');
         document.getElementById('installment-section').classList.add('hidden');
         document.getElementById('recurring-section').classList.add('hidden');
         
+        // Manter obrigatórios visíveis: valor, data, descrição
+        document.getElementById('description-section').classList.remove('hidden');
+        document.getElementById('amount-section').classList.remove('hidden');
+        document.getElementById('date-section').classList.remove('hidden');
+
+        // Remover required da categoria e forma de pagamento
+        if (categorySelect) {
+            categorySelect.required = false;
+            categorySelect.removeAttribute('required');
+        }
+        if (paymentMethodSelect) {
+            paymentMethodSelect.required = false;
+            paymentMethodSelect.removeAttribute('required');
+        }
+        
+        // Ocultar asterisco vermelho
+        if (requiredStar) {
+            requiredStar.classList.add('hidden');
+        }
+
     } else if (type === 'saida') {
+        typeInput.value = 'saida';
+        isInvestmentInput.value = '0';
+        
         saidaBtn.classList.add('border-red-500', 'bg-red-50', 'text-red-700', 'dark:bg-red-900/30', 'dark:text-red-300', 'dark:border-red-500');
         saidaBtn.classList.remove('border-gray-200', 'dark:border-gray-700');
         
-        // Mostrar seções para saídas
+        // Para saídas: mostrar todos os campos
         document.getElementById('payment-method-section').classList.remove('hidden');
+        document.getElementById('category-section').classList.remove('hidden');
         document.getElementById('installment-section').classList.remove('hidden');
         document.getElementById('recurring-section').classList.remove('hidden');
+        document.getElementById('description-section').classList.remove('hidden');
+        document.getElementById('amount-section').classList.remove('hidden');
+        document.getElementById('date-section').classList.remove('hidden');
+        
+        // Adicionar required apenas para a categoria (forma de pagamento é opcional)
+        if (categorySelect) {
+            categorySelect.required = true;
+            categorySelect.setAttribute('required', 'required');
+        }
+        if (paymentMethodSelect) {
+            paymentMethodSelect.required = false;
+            paymentMethodSelect.removeAttribute('required');
+        }
+        
+        // Mostrar asterisco vermelho
+        if (requiredStar) {
+            requiredStar.classList.remove('hidden');
+        }
         
         // Calcular parcelas
         calculateInstallments();
         
     } else if (type === 'investimento') {
-        investimentoBtn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700', 'dark:bg-blue-900/30', 'dark:text-blue-300', 'dark:border-blue-500'); // ← NOVO ESTILO
+        typeInput.value = 'saida'; // Investimentos são registrados como saídas
+        isInvestmentInput.value = '1';
+        
+        investimentoBtn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700', 'dark:bg-blue-900/30', 'dark:text-blue-300', 'dark:border-blue-500');
         investimentoBtn.classList.remove('border-gray-200', 'dark:border-gray-700');
         
-        // Mostrar forma de pagamento, mas não parcelas
-        document.getElementById('payment-method-section').classList.remove('hidden');
-        document.getElementById('installment-section').classList.add('hidden'); // Investimentos não parcelam
-        document.getElementById('recurring-section').classList.add('hidden'); // Não faz sentido investimento recorrente
+        // Para investimentos: mostrar apenas valor, data e descrição
+        document.getElementById('payment-method-section').classList.add('hidden');
+        document.getElementById('category-section').classList.add('hidden');
+        document.getElementById('installment-section').classList.add('hidden');
+        document.getElementById('recurring-section').classList.add('hidden');
+        
+        // Manter obrigatórios visíveis: valor, data, descrição
+        document.getElementById('description-section').classList.remove('hidden');
+        document.getElementById('amount-section').classList.remove('hidden');
+        document.getElementById('date-section').classList.remove('hidden');
+        
+        // Remover required da categoria e forma de pagamento
+        if (categorySelect) {
+            categorySelect.required = false;
+            categorySelect.removeAttribute('required');
+        }
+        if (paymentMethodSelect) {
+            paymentMethodSelect.required = false;
+            paymentMethodSelect.removeAttribute('required');
+        }
+        
+        // Ocultar asterisco vermelho
+        if (requiredStar) {
+            requiredStar.classList.add('hidden');
+        }
     }
 }
 
-// Calcular parcelas
+// Função para criar uma data corretamente (resolver problema do fuso horário)
+function parseDateWithoutTimezone(dateString) {
+    // Divide a string "YYYY-MM-DD" em partes
+    const parts = dateString.split('-');
+    if (parts.length !== 3) {
+        return new Date(dateString);
+    }
+    
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // JavaScript months are 0-indexed
+    const day = parseInt(parts[2], 10);
+    
+    // Cria a data sem considerar fuso horário
+    return new Date(year, month, day);
+}
+
+// Calcular parcelas CORRIGIDA (data um dia a menos)
 function calculateInstallments() {
     const amountInput = document.getElementById('amount');
     const installmentsSelect = document.getElementById('installments-select');
     const installmentAmount = document.getElementById('installment-amount');
     const installmentDatesList = document.getElementById('installment-dates-list');
     const installmentDates = document.getElementById('installment-dates');
+    const dateInput = document.getElementById('date-input');
     
-    if (!amountInput || !installmentsSelect || !installmentAmount) return;
+    if (!amountInput || !installmentsSelect || !installmentAmount || !dateInput) return;
     
     const amountValue = parseFloat(amountInput.value.replace(/[^\d,]/g, '').replace(',', '.'));
     const installments = parseInt(installmentsSelect.value);
@@ -366,18 +461,34 @@ function calculateInstallments() {
     const installmentValue = amountValue / installments;
     installmentAmount.value = installmentValue.toFixed(2).replace('.', ',');
     
-    // Gerar datas das parcelas
+    // Gerar datas das parcelas CORRIGIDO
     if (installments > 1) {
-        const dateInput = document.querySelector('input[name="date"]');
-        const startDate = new Date(dateInput.value);
+        // Usar a função corrigida para evitar problemas de fuso horário
+        const startDate = parseDateWithoutTimezone(dateInput.value);
         const dates = [];
         
         for (let i = 0; i < installments; i++) {
             const installmentDate = new Date(startDate);
-            installmentDate.setMonth(installmentDate.getMonth() + i);
             
-            const formattedDate = installmentDate.toLocaleDateString('pt-BR');
-            dates.push(`<div>${i + 1}ª parcela: ${formattedDate}</div>`);
+            // Adicionar meses mantendo o dia original
+            installmentDate.setMonth(startDate.getMonth() + i);
+            
+            // Garantir que não mudemos o dia (problema com meses com dias diferentes)
+            // Se o dia original for 31 e o próximo mês tiver apenas 30, ajustar para 30
+            const originalDay = startDate.getDate();
+            const maxDay = new Date(installmentDate.getFullYear(), installmentDate.getMonth() + 1, 0).getDate();
+            installmentDate.setDate(Math.min(originalDay, maxDay));
+            
+            // Formatar data no padrão brasileiro
+            const day = String(installmentDate.getDate()).padStart(2, '0');
+            const month = String(installmentDate.getMonth() + 1).padStart(2, '0');
+            const year = installmentDate.getFullYear();
+            const formattedDate = `${day}/${month}/${year}`;
+            
+            dates.push(`<div class="flex items-center">
+                <span class="inline-block w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full text-xs flex items-center justify-center mr-2">${i + 1}</span>
+                ${formattedDate}
+            </div>`);
         }
         
         installmentDatesList.innerHTML = dates.join('');
@@ -404,12 +515,22 @@ function toggleRecurringOptions() {
 
 // Inicializar com saída selecionada
 document.addEventListener('DOMContentLoaded', function() {
-    selectType('saida');
+    // Verificar se há valor antigo para type
+    const oldType = "{{ old('type', 'saida') }}";
+    const oldIsInvestment = "{{ old('is_investment', 0) }}";
+    
+    if (oldIsInvestment == 1) {
+        selectType('investimento');
+    } else if (oldType === 'entrada') {
+        selectType('entrada');
+    } else {
+        selectType('saida');
+    }
     
     // Adicionar listeners para cálculos de parcelas
     const amountInput = document.getElementById('amount');
     const installmentsSelect = document.getElementById('installments-select');
-    const dateInput = document.querySelector('input[name="date"]');
+    const dateInput = document.getElementById('date-input');
     
     if (amountInput && installmentsSelect) {
         amountInput.addEventListener('input', calculateInstallments);
@@ -425,62 +546,75 @@ document.addEventListener('DOMContentLoaded', function() {
     if (recurringCheckbox && recurringCheckbox.checked) {
         toggleRecurringOptions();
     }
+    
+    // Verificar se a data está vazia e definir para hoje
+    if (dateInput && !dateInput.value) {
+        const today = new Date();
+        const formattedToday = today.toISOString().split('T')[0];
+        dateInput.value = formattedToday;
+    }
 });
 
 // Contador de caracteres
 const textarea = document.getElementById('description');
 const counter = document.getElementById('counter');
-textarea.addEventListener('input', () => {
-    const length = textarea.value.length;
-    counter.textContent = `${length}/255 caracteres`;
-    
-    if (length > 200) {
-        counter.classList.add('text-red-500', 'dark:text-red-400');
-        counter.classList.remove('text-gray-700', 'dark:text-gray-300');
-    } else {
-        counter.classList.remove('text-red-500', 'dark:text-red-400');
-        counter.classList.add('text-gray-700', 'dark:text-gray-300');
-    }
-});
+if (textarea && counter) {
+    textarea.addEventListener('input', () => {
+        const length = textarea.value.length;
+        counter.textContent = `${length}/255 caracteres`;
+        
+        if (length > 200) {
+            counter.classList.add('text-red-500', 'dark:text-red-400');
+            counter.classList.remove('text-gray-700', 'dark:text-gray-300');
+        } else {
+            counter.classList.remove('text-red-500', 'dark:text-red-400');
+            counter.classList.add('text-gray-700', 'dark:text-gray-300');
+        }
+    });
+}
 
 // Formatação do valor monetário
 const amountInput = document.getElementById('amount');
 const maxAmount = 1000000;
 
-amountInput.addEventListener('input', function(e) {
-    let value = this.value.replace(/\D/g, '');
-    
-    if (parseInt(value) > maxAmount * 100) {
-        value = (maxAmount * 100).toString();
-    }
+if (amountInput) {
+    amountInput.addEventListener('input', function(e) {
+        let value = this.value.replace(/\D/g, '');
+        
+        if (parseInt(value) > maxAmount * 100) {
+            value = (maxAmount * 100).toString();
+        }
 
-    if (value) {
-        value = (parseInt(value) / 100).toFixed(2);
-        this.value = value.replace('.', ',');
-    } else {
-        this.value = '';
-    }
+        if (value) {
+            value = (parseInt(value) / 100).toFixed(2);
+            this.value = value.replace('.', ',');
+        } else {
+            this.value = '';
+        }
 
-    document.getElementById('amount-error').textContent = '';
-    calculateInstallments(); // Calcular parcelas ao digitar
-});
+        const amountError = document.getElementById('amount-error');
+        if (amountError) amountError.textContent = '';
+        calculateInstallments(); // Calcular parcelas ao digitar
+    });
+
+    // Validação do valor
+    amountInput.addEventListener('blur', function() {
+        let value = this.value.replace(/\D/g, '');
+        const amountError = document.getElementById('amount-error');
+        if (value && parseInt(value) < 1) {
+            if (amountError) amountError.textContent = 'O valor deve ser maior que R$ 0,01';
+            this.classList.add('border-red-500', 'dark:border-red-500');
+        } else {
+            this.classList.remove('border-red-500', 'dark:border-red-500');
+        }
+    });
+}
 
 // Focar no primeiro campo
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
-        amountInput.focus();
+        if (amountInput) amountInput.focus();
     }, 100);
-});
-
-// Validação do valor
-amountInput.addEventListener('blur', function() {
-    let value = this.value.replace(/\D/g, '');
-    if (value && parseInt(value) < 1) {
-        document.getElementById('amount-error').textContent = 'O valor deve ser maior que R$ 0,01';
-        this.classList.add('border-red-500', 'dark:border-red-500');
-    } else {
-        this.classList.remove('border-red-500', 'dark:border-red-500');
-    }
 });
 </script>
 

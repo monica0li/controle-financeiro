@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use App\Models\Category;
 
 class Transaction extends Model
 {
     protected $fillable = [
         'user_id',
-        'category_id',
+        'category_id', // Agora pode ser null
         'payment_method_id',
         'type',
         'amount',
@@ -32,7 +31,7 @@ class Transaction extends Model
         'current_installment' => 'integer',
         'is_recurring' => 'boolean',
         'recurring_until' => 'date',
-        'is_investment' => 'boolean', // ← ADICIONE ESTA LINHA
+        'is_investment' => 'boolean',
     ];
 
     public function user()
@@ -48,6 +47,18 @@ class Transaction extends Model
     public function paymentMethod()
     {
         return $this->belongsTo(PaymentMethod::class);
+    }
+    
+    // Scope para investimentos
+    public function scopeInvestments($query)
+    {
+        return $query->where('is_investment', true);
+    }
+    
+    // Verificar se é investimento
+    public function getIsInvestmentAttribute()
+    {
+        return (bool) $this->attributes['is_investment'] ?? false;
     }
     
     // Gerar ID único para grupo de parcelas
@@ -72,17 +83,5 @@ class Transaction extends Model
         return self::where('installment_group_id', $this->installment_group_id)
             ->orderBy('current_installment')
             ->get();
-    }
-
-        // Scope para investimentos
-    public function scopeInvestments($query)
-    {
-        return $query->where('is_investment', true);
-    }
-    
-    // Verificar se é investimento
-    public function getIsInvestmentAttribute()
-    {
-        return (bool) $this->attributes['is_investment'] ?? false;
     }
 }
