@@ -180,19 +180,19 @@
                             @if($entradas->count() > 0)
                                 <div class="space-y-4">
                                     @foreach($entradas->take(5) as $entrada)
-                                        <div class="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                                            <div>
-                                                <p class="font-medium text-gray-800 dark:text-gray-200">
+                                        <div class="flex items-start justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                                            <div class="flex-1 min-w-0 mr-4">
+                                                <p class="font-medium text-gray-800 dark:text-gray-200 break-words">
                                                     {{ $entrada->description }}
                                                 </p>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                     {{ \Carbon\Carbon::parse($entrada->date)->format('d/m') }}
                                                     @if($entrada->category)
                                                         • {{ $entrada->category->name }}
                                                     @endif
                                                 </p>
                                             </div>
-                                            <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                                            <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                                                 + R$ {{ number_format($entrada->amount, 2, ',', '.') }}
                                             </div>
                                         </div>
@@ -225,20 +225,27 @@
                             @if($saidasNormais->count() > 0)
                                 <div class="space-y-4">
                                     @foreach($saidasNormais->take(5) as $saida)
-                                        <div class="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                                            <div>
-                                                <p class="font-medium text-gray-800 dark:text-gray-200">
+                                        <div class="flex items-start justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                                            <div class="flex-1 min-w-0 mr-4">
+                                                <p class="font-medium text-gray-800 dark:text-gray-200 break-words">
                                                     {{ $saida->description }}
                                                 </p>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                     {{ \Carbon\Carbon::parse($saida->date)->format('d/m') }}
                                                     • {{ $saida->category->name ?? 'Sem categoria' }}
                                                     @if($saida->paymentMethod)
-                                                        • {{ $saida->paymentMethod->name }}
+                                                        @php
+                                                            $displayName = $saida->paymentMethod->name;
+                                                            if ($saida->paymentMethod->is_card && $saida->paymentMethod->card_type) {
+                                                                $cardType = $saida->paymentMethod->card_type === 'credit' ? 'Crédito' : 'Débito';
+                                                                $displayName = $cardType . ' ' . $saida->paymentMethod->name;
+                                                            }
+                                                        @endphp
+                                                        • {{ $displayName }}
                                                     @endif
                                                 </p>
                                             </div>
-                                            <div class="text-lg font-bold text-red-600 dark:text-red-400">
+                                            <div class="text-lg font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
                                                 - R$ {{ number_format($saida->amount, 2, ',', '.') }}
                                             </div>
                                         </div>
@@ -282,25 +289,37 @@
                                         </thead>
                                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                             @foreach($saidasParceladas as $parcela)
-                                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-900">
+                                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-900 dark:text-gray-300">
                                                     <td class="px-4 py-3">
-                                                        <ddiv class="flex items-center gap-2">
-                                                            <span class="font-medium">{{ $parcela->description }}</span>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                        <div class="flex flex-col sm:flex-row sm:items-start gap-2">
+                                                            <span class="font-medium break-words max-w-[200px]">{{ $parcela->description }}</span>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 whitespace-nowrap self-start">
                                                                 {{ $parcela->current_installment }}/{{ $parcela->installments }}
                                                             </span>
-                                                        </ddiv>
+                                                        </div>
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap">{{ \Carbon\Carbon::parse($parcela->date)->format('d/m/Y') }}</td>
                                                     <td class="px-4 py-3">{{ $parcela->category->name ?? '-' }}</td>
-                                                    <td class="px-4 py-3">{{ $parcela->paymentMethod->name ?? '-' }}</td>
-                                                    <td class="px-4 py-3 font-bold text-red-600 dark:text-red-400">
+                                                    <td class="px-4 py-3">
+                                                        @if($parcela->paymentMethod)
+                                                            @php
+                                                                $displayName = $parcela->paymentMethod->name;
+                                                                if ($parcela->paymentMethod->is_card && $parcela->paymentMethod->card_type) {
+                                                                    $cardType = $parcela->paymentMethod->card_type === 'credit' ? 'Crédito' : 'Débito';
+                                                                    $displayName = $cardType . ' ' . $parcela->paymentMethod->name;
+                                                                }
+                                                            @endphp
+                                                            {{ $displayName }}
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-3 font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
                                                         - R$ {{ number_format($parcela->amount, 2, ',', '.') }}
                                                     </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
-
                                     </table>
                                 </div>
                             @else
@@ -327,19 +346,29 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="p-6">
+                        <div class="p-6 dark:text-gray-300">
                             @if($gastosPorCartao->count() > 0)
                                 <div class="space-y-4 mb-4">
                                     @foreach($gastosPorCartao as $cartao)
+                                        @php
+                                            $displayName = $cartao['name'];
+                                            if ($cartao['is_card'] ?? false) {
+                                                if ($cartao['card_type'] === 'credit') {
+                                                    $displayName = 'Crédito ' . str_replace('Crédito ', '', $cartao['name']);
+                                                } elseif ($cartao['card_type'] === 'debit') {
+                                                    $displayName = 'Débito ' . str_replace('Débito ', '', $cartao['name']);
+                                                }
+                                            }
+                                        @endphp
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center">
                                                 <div class="w-3 h-3 rounded-full mr-3 {{ ($cartao['is_card'] ?? false) ? 'bg-blue-500' : 'bg-gray-500' }}"></div>
                                                 <div>
-                                                    <p class="font-medium">{{ $cartao['name'] }}</p>
+                                                    <p class="font-medium">{{ $displayName }}</p>
                                                     <p class="text-sm text-gray-500">{{ $cartao['count'] }} {{ $cartao['count'] == 1 ? 'transação' : 'transações' }}</p>
                                                 </div>
                                             </div>
-                                            <div class="font-bold text-red-600">
+                                            <div class="font-bold text-red-600 dark:text-red-400">
                                                 R$ {{ number_format($cartao['total'], 2, ',', '.') }}
                                             </div>
                                         </div>
@@ -366,14 +395,14 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="p-6">
+                        <div class="p-6 dark:text-gray-300">
                             @if($gastosPorCategoria->count() > 0)
                                 <div class="space-y-4 mb-4">
                                     @foreach($gastosPorCategoria as $categoria)
                                         <div>
                                             <div class="flex justify-between mb-1">
                                                 <span class="text-sm font-medium">{{ $categoria['name'] }}</span>
-                                                <span class="text-sm font-bold text-red-600">
+                                                <span class="text-sm font-bold text-red-600 dark:text-red-400">
                                                     R$ {{ number_format($categoria['total'], 2, ',', '.') }}
                                                 </span>
                                             </div>
@@ -412,7 +441,7 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="p-6">
+                        <div class="p-6 dark:text-gray-300">
                             @if($gastosPorFormaPagamento->count() > 0)
                                 <div class="space-y-6 mb-4">
                                     @foreach($gastosPorFormaPagamento as $forma)
@@ -432,7 +461,7 @@
                                                     <p class="text-sm text-gray-500">{{ $forma['count'] }} {{ $forma['count'] == 1 ? 'transação' : 'transações' }}</p>
                                                 </div>
                                             </div>
-                                            <div class="font-bold text-red-600">
+                                            <div class="font-bold text-red-600 dark:text-red-400">
                                                 R$ {{ number_format($forma['total'], 2, ',', '.') }}
                                             </div>
                                         </div>
@@ -486,7 +515,7 @@
                             R$ {{ number_format($totalEntradasGeral, 2, ',', '.') }}
                         </p>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                            {{ $entradasCountGeral }} {{ $entradasCountGeral == 1 ? 'transação' : 'transações' }}
+                            {{ $entradasCountGeral }} {{ $entradasCountGeral == 1 ? 'entrada' : 'entradas' }}
                         </p>
                     </div>
 
@@ -503,7 +532,7 @@
                         </p>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
                             {{ $saidasNormaisCountGeral + $allTransactions->where('type', 'saida')->where('installments', '>', 1)->count() }} 
-                            {{ ($saidasNormaisCountGeral + $allTransactions->where('type', 'saida')->where('installments', '>', 1)->count()) == 1 ? 'transação' : 'transações' }}
+                            {{ ($saidasNormaisCountGeral + $allTransactions->where('type', 'saida')->where('installments', '>', 1)->count()) == 1 ? 'saída' : 'saídas' }}
                         </p>
                     </div>
 
@@ -558,8 +587,15 @@
                                 <select name="payment_method_id" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 text-gray-900 dark:text-gray-200">
                                     <option value="">Todas</option>
                                     @foreach($paymentMethods as $method)
+                                        @php
+                                            $displayName = $method->name;
+                                            if ($method->is_card) {
+                                                $cardType = $method->card_type === 'credit' ? 'Crédito' : 'Débito';
+                                                $displayName = $cardType . ' ' . $method->name;
+                                            }
+                                        @endphp
                                         <option value="{{ $method->id }}" {{ request('payment_method_id') == $method->id ? 'selected' : '' }}>
-                                            {{ $method->name }}
+                                            {{ $displayName }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -639,10 +675,10 @@
                                         <!-- Descrição -->
                                         <td class="px-6 py-4">
                                             <div class="text-sm text-gray-900 dark:text-gray-200">
-                                                <div class="flex items-center gap-2">
-                                                    <span>{{ $transaction->description }}</span>
+                                                <div class="flex flex-col sm:flex-row sm:items-start gap-2">
+                                                    <span class="break-words max-w-[250px]">{{ $transaction->description }}</span>
                                                     @if($transaction->installments > 1)
-                                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 whitespace-nowrap self-start">
                                                         {{ $transaction->current_installment }}/{{ $transaction->installments }}
                                                     </span>
                                                     @endif
@@ -671,7 +707,18 @@
                                         <!-- Forma de Pagamento -->
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900 dark:text-gray-200">
-                                                    {{ $transaction->paymentMethod->name ?? '—' }}
+                                                @if($transaction->paymentMethod)
+                                                    @php
+                                                        $displayName = $transaction->paymentMethod->name;
+                                                        if ($transaction->paymentMethod->is_card && $transaction->paymentMethod->card_type) {
+                                                            $cardType = $transaction->paymentMethod->card_type === 'credit' ? 'Crédito' : 'Débito';
+                                                            $displayName = $cardType . ' ' . $transaction->paymentMethod->name;
+                                                        }
+                                                    @endphp
+                                                    {{ $displayName }}
+                                                @else
+                                                    —
+                                                @endif
                                             </div>
                                         </td>
 
@@ -859,6 +906,29 @@
 </script>
 
     <style>
+
+            /* Garantir quebra de palavras longas */
+        .break-words {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+        }
+
+        /* Para tabelas específicas */
+        table td {
+            vertical-align: top;
+        }
+
+        /* Para garantir que valores monetários não quebrem */
+        .whitespace-nowrap {
+            white-space: nowrap;
+        }
+
+        /* Ajustar alinhamento vertical em tabelas */
+        .align-top {
+            vertical-align: top;
+        }
         .tab-button {
             transition: all 0.3s ease;
         }

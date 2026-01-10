@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PaymentMethodsController extends Controller
 {
@@ -26,10 +25,20 @@ class PaymentMethodsController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'is_card' => 'boolean',
+            'is_card' => 'nullable|boolean',
             'card_type' => 'required_if:is_card,true|in:credit,debit',
             'active' => 'boolean'
         ]);
+
+        // Garantir que is_card tenha valor
+        if (!isset($validated['is_card'])) {
+            $validated['is_card'] = false;
+        }
+
+        // Se não for cartão, limpar card_type
+        if (!$validated['is_card']) {
+            $validated['card_type'] = null;
+        }
 
         PaymentMethod::create($validated);
 
@@ -45,16 +54,16 @@ class PaymentMethodsController extends Controller
     public function update(Request $request, PaymentMethod $paymentMethod)
     {
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:100',
-                Rule::unique('payment_methods')->ignore($paymentMethod->id)
-            ],
-            'is_card' => 'boolean',
+            'name' => 'required|string|max:100', // REMOVIDO: Rule::unique()
+            'is_card' => 'nullable|boolean',
             'card_type' => 'required_if:is_card,true|in:credit,debit',
             'active' => 'boolean'
         ]);
+
+        // Garantir que is_card tenha valor
+        if (!isset($validated['is_card'])) {
+            $validated['is_card'] = false;
+        }
 
         // Se não for cartão, limpar card_type
         if (!$validated['is_card']) {

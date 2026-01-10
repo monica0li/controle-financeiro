@@ -53,7 +53,7 @@
                                 Tipo de Movimentação
                                 <span class="text-red-500">*</span>
                             </label>
-                            <div class="grid grid-cols-3 gap-4">
+                            <div class="grid grid-cols-3 gap-4 dark:text-gray-300">
                                 <button type="button" id="entrada-btn"
                                     class="flex items-center justify-center px-4 py-3 border-2 rounded-xl font-medium transition-all duration-300"
                                     onclick="selectType('entrada')">
@@ -88,18 +88,12 @@
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 Descrição
                             </label>
-                            <textarea id="description" maxlength="255" 
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 resize-none min-h-[100px] hover:border-gray-300 dark:hover:border-gray-600"
-                                name="description" 
-                                placeholder="Descreva a movimentação...">{{ old('description') }}</textarea>
-                            <div class="flex justify-between items-center mt-3">
-                                <div id="counter" class="text-sm font-medium px-3 py-1 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-lg">
-                                    {{ strlen(old('description', '')) }}/255 caracteres
-                                </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                    Máximo 255 caracteres
-                                </span>
-                            </div>
+                            <input type="text" name="description" 
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200 font-medium"
+                                maxlength="255"
+                                value="{{ old('description') }}" 
+                                id="description-input" 
+                                placeholder="Descrição da movimentação">
                         </div>
 
                         <!-- Valor (REORDENADO - segundo) -->
@@ -146,7 +140,16 @@
                                 required>
                                 <option value="" class="py-2 text-gray-400">Selecione uma forma de pagamento</option>
                                 @foreach($paymentMethods as $paymentMethod)
-                                    <option value="{{ $paymentMethod->id }}" {{ old('payment_method_id') == $paymentMethod->id ? 'selected' : '' }} class="py-2">{{ $paymentMethod->name }}</option>
+                                    @php
+                                        $displayName = $paymentMethod->name;
+                                        if ($paymentMethod->is_card) {
+                                            $cardType = $paymentMethod->card_type === 'credit' ? 'Crédito' : 'Débito';
+                                            $displayName = $cardType . ' ' . $paymentMethod->name;
+                                        }
+                                    @endphp
+                                    <option value="{{ $paymentMethod->id }}" {{ old('payment_method_id') == $paymentMethod->id ? 'selected' : '' }} class="py-2">
+                                        {{ $displayName }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
