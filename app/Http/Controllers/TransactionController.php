@@ -16,8 +16,19 @@ class TransactionController extends Controller
 {
     public function index(Request $request)
     {
-        // Obter dados do dashboard mensal
-        $monthlyData = $this->getMonthlyDashboardData($request);
+        // Capturar parâmetros de mês/ano da URL
+        $month = $request->input('month');
+        $year = $request->input('year');
+        
+        // Validar se são valores válidos, caso contrário usar mês atual
+        if (!$month || !$year || !is_numeric($month) || !is_numeric($year)) {
+            $currentDate = Carbon::now();
+            $month = $currentDate->month;
+            $year = $currentDate->year;
+        }
+        
+        // Obter dados do dashboard mensal com os parâmetros de mês/ano
+        $monthlyData = $this->getMonthlyDashboardData($request, $month, $year);
         
         // Query BASE (sem paginação) para os totais e contagens GERAIS
         $baseQuery = Transaction::where('user_id', Auth::id());
@@ -157,7 +168,7 @@ class TransactionController extends Controller
             if ($originalType === 'saida' && !$isInvestment) {
                 // Apenas para SAÍDAS NORMAIS (não investimentos) - categoria obrigatória
                 $validationRules['category_id'] = 'required|exists:categories,id';
-                $validationRules['payment_method_id'] = 'nullable|exists:payment_methods,id';
+                $validationRules['payment_method_id'] = 'required|exists:payment_methods,id';
                 $validationRules['installments'] = 'nullable|integer|min:1|max:24';
                 $validationRules['is_recurring'] = 'sometimes|boolean';
 
@@ -410,7 +421,12 @@ class TransactionController extends Controller
     {
         // Determinar o mês a ser mostrado
         if ($month && $year) {
-            $currentMonth = Carbon::create($year, $month, 1)->startOfMonth();
+            try {
+                $currentMonth = Carbon::create($year, $month, 1)->startOfMonth();
+            } catch (\Exception $e) {
+                // Se houver erro (mês inválido), usar o mês atual
+                $currentMonth = Carbon::now()->startOfMonth();
+            }
         } else {
             $currentMonth = Carbon::now()->startOfMonth();
         }

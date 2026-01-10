@@ -69,9 +69,6 @@
                             <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">
                                 {{ $monthName }}
                             </h2>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Dashboard Financeiro
-                            </p>
                         </div>
                         
                         <!-- Botão Próximo Mês -->

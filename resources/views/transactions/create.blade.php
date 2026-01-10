@@ -127,11 +127,23 @@
 
                         <!-- Forma de Pagamento (REORDENADO - terceiro) -->
                         <div id="payment-method-section" class="hidden">
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Forma de Pagamento
-                            </label>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Forma de Pagamento
+                                    <span class="text-red-500 required-star">*</span>
+                                </label>
+                                <a href="{{ route('payment-methods.create') }}" 
+                                    class="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors duration-200"
+                                    target="_blank">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Nova Forma
+                                </a>
+                            </div>
                             <select name="payment_method_id" 
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600">
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
+                                required>
                                 <option value="" class="py-2 text-gray-400">Selecione uma forma de pagamento</option>
                                 @foreach($paymentMethods as $paymentMethod)
                                     <option value="{{ $paymentMethod->id }}" {{ old('payment_method_id') == $paymentMethod->id ? 'selected' : '' }} class="py-2">{{ $paymentMethod->name }}</option>
@@ -141,10 +153,20 @@
 
                         <!-- Categoria (REORDENADO - quarto) -->
                         <div id="category-section">
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Categoria
-                                <span class="text-red-500 required-star">*</span>
-                            </label>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Categoria
+                                    <span class="text-red-500 required-star">*</span>
+                                </label>
+                                <a href="{{ route('categories.create') }}" 
+                                    class="inline-flex items-center text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-medium transition-colors duration-200"
+                                    target="_blank">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Nova Categoria
+                                </a>
+                            </div>
                             <select name="category_id" id="category-select"
                                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 transition-all duration-200 appearance-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
                                 required>
@@ -616,6 +638,93 @@ document.addEventListener('DOMContentLoaded', function() {
         if (amountInput) amountInput.focus();
     }, 100);
 });
+
+// Verificar se há novas categorias/formas de pagamento quando a página ganha foco
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        // Aguardar 1 segundo para dar tempo de salvar no outro formulário
+        setTimeout(() => {
+            reloadCategories();
+            reloadPaymentMethods();
+        }, 1000);
+    }
+});
+
+// Também recarregar quando a página for carregada
+document.addEventListener('DOMContentLoaded', () => {
+    // Aguardar um pouco para garantir que tudo esteja carregado
+    setTimeout(() => {
+        reloadCategories();
+        reloadPaymentMethods();
+    }, 500);
+});
+
+// Funções simplificadas para recarregar (sem necessidade de rotas específicas, usando a mesma lógica do Blade)
+async function reloadCategories() {
+    try {
+        // Fazer uma requisição para a mesma página e extrair as categorias do HTML
+        const response = await fetch(window.location.href);
+        const text = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        
+        // Encontrar o select de categorias no novo HTML
+        const newSelect = doc.getElementById('category-select');
+        if (newSelect && document.getElementById('category-select')) {
+            const currentSelect = document.getElementById('category-select');
+            const currentValue = currentSelect.value;
+            
+            // Substituir as opções (exceto a primeira)
+            while (currentSelect.options.length > 1) {
+                currentSelect.remove(1);
+            }
+            
+            // Adicionar novas opções
+            for (let i = 1; i < newSelect.options.length; i++) {
+                const option = newSelect.options[i].cloneNode(true);
+                currentSelect.appendChild(option);
+            }
+            
+            // Restaurar valor selecionado
+            currentSelect.value = currentValue;
+        }
+    } catch (error) {
+        console.error('Erro ao recarregar categorias:', error);
+    }
+}
+
+async function reloadPaymentMethods() {
+    try {
+        // Fazer uma requisição para a mesma página e extrair as formas de pagamento do HTML
+        const response = await fetch(window.location.href);
+        const text = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        
+        // Encontrar o select de formas de pagamento no novo HTML
+        const newSelect = doc.querySelector('select[name="payment_method_id"]');
+        if (newSelect && document.querySelector('select[name="payment_method_id"]')) {
+            const currentSelect = document.querySelector('select[name="payment_method_id"]');
+            const currentValue = currentSelect.value;
+            
+            // Substituir as opções (exceto a primeira)
+            while (currentSelect.options.length > 1) {
+                currentSelect.remove(1);
+            }
+            
+            // Adicionar novas opções
+            for (let i = 1; i < newSelect.options.length; i++) {
+                const option = newSelect.options[i].cloneNode(true);
+                currentSelect.appendChild(option);
+            }
+            
+            // Restaurar valor selecionado
+            currentSelect.value = currentValue;
+        }
+    } catch (error) {
+        console.error('Erro ao recarregar formas de pagamento:', error);
+    }
+}
 </script>
 
 <style>
