@@ -6,6 +6,39 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\PaymentMethodsController;
 
+Route::get('/check-env', function() {
+    $envPath = base_path('.env');
+    
+    return [
+        'env_file_exists' => file_exists($envPath) ? '✅' : '❌',
+        'env_file_size' => file_exists($envPath) ? filesize($envPath) : 0,
+        'app_key_in_env' => env('APP_KEY') ? '✅' : '❌',
+        'app_key_in_server' => $_SERVER['APP_KEY'] ? '✅' : '❌',
+        'all_env_vars' => [
+            'APP_KEY' => env('APP_KEY'),
+            'DB_HOST' => env('DB_HOST'),
+            'DB_DATABASE' => env('DB_DATABASE'),
+        ]
+    ];
+});
+
+Route::get('/create-env-now', function() {
+    $envPath = base_path('.env');
+    
+    $content = "APP_KEY=" . getenv('APP_KEY') . "\n";
+    $content .= "APP_DEBUG=true\n";
+    $content .= "APP_URL=https://controle-financeiro-1-jc96.onrender.com\n";
+    $content .= "DB_CONNECTION=pgsql\n";
+    $content .= "DB_HOST=" . getenv('DB_HOST') . "\n";
+    $content .= "DB_DATABASE=" . getenv('DB_DATABASE') . "\n";
+    $content .= "DB_USERNAME=" . getenv('DB_USERNAME') . "\n";
+    $content .= "DB_PASSWORD=" . getenv('DB_PASSWORD') . "\n";
+    
+    file_put_contents($envPath, $content);
+    
+    return "✅ .env criado!<br>" . nl2br($content);
+});
+
 Route::get('/test-env', function() {
     return [
         'app_key' => env('APP_KEY') ? '✅ Configurada' : '❌ FALTANDO',
