@@ -81,4 +81,12 @@ Route::prefix('payment-methods')->name('payment-methods.')->group(function () {
     Route::post('/{paymentMethod}/activate', [PaymentMethodsController::class, 'activate'])->name('activate');
 });
 
+Route::get('/test-db', function() {
+    try {
+        \DB::connection()->getPdo();
+        return "✅ Banco conectado!";
+    } catch (\Exception $e) {
+        return "❌ Erro na conexão: " . $e->getMessage();
+    }
+});
 require __DIR__.'/auth.php';
