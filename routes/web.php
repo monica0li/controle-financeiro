@@ -6,6 +6,15 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\PaymentMethodsController;
 
+Route::get('/test-env', function() {
+    return [
+        'app_key' => env('APP_KEY') ? '✅ Configurada' : '❌ FALTANDO',
+        'db_host' => env('DB_HOST'),
+        'db_connected' => function_exists('pg_connect') ? '✅' : '❌',
+        'php_version' => phpversion(),
+    ];
+});
+
 Route::get('/', function() {
     return "✅ Laravel está funcionando!";
 });
