@@ -15,6 +15,15 @@ Route::get('/test-env', function() {
     ];
 });
 
+Route::get('/test-db', function() {
+    try {
+        \DB::connection()->getPdo();
+        return "✅ Banco conectado!";
+    } catch (\Exception $e) {
+        return "❌ Erro: " . $e->getMessage();
+    }
+});
+
 Route::get('/', function() {
     return "✅ Laravel está funcionando!";
 });
