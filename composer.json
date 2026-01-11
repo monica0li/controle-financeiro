@@ -72,12 +72,15 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
         "post-install-cmd": [
+            "@php scripts/create-env.php",
             "@php artisan storage:link",
-            "@php scripts/init.sh"
+            "php artisan config:clear",
+            "php artisan cache:clear",
+            "bash scripts/init.sh"
         ],
         "start": [
-        "@php artisan migrate --force",
-        "bash start-render.sh"
+            "@php artisan migrate --force",
+            "bash start-render.sh"
         ]
     },
     "extra": {
