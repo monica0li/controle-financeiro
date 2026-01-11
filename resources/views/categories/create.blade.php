@@ -1,4 +1,3 @@
-{{-- resources/views/categories/create.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -7,7 +6,7 @@
                     Nova Categoria
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Crie uma nova categoria para suas despesas
+                    Adicione uma nova categoria
                 </p>
             </div>
         </div>
@@ -17,7 +16,6 @@
         <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                 
-                <!-- Cabeçalho do formulário -->
                 <div class="px-6 py-5 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
                         Detalhes da Categoria
@@ -50,41 +48,17 @@
                         <!-- Nome -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Nome da Categoria
+                                Nome
                                 <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="name" 
                                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:ring-emerald-400 dark:focus:border-emerald-400 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200"
                                 required
                                 value="{{ old('name') }}"
-                                placeholder="Ex: Alimentação, Transporte, Saúde..."
+                                placeholder="Ex: Alimentação, Transporte, Lazer..."
                                 autocomplete="off"
                                 autofocus>
                         </div>
-
-                        <!-- Status -->
-                        {{-- <div>
-                            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center">
-                                    <div class="relative inline-block w-12 mr-3 align-middle select-none">
-                                        <input type="checkbox" name="active" id="active" 
-                                            class="sr-only toggle-checkbox" 
-                                            value="1"
-                                            {{ old('active', true) ? 'checked' : '' }}>
-                                        <label for="active" class="block h-6 w-12 cursor-pointer bg-gray-300 dark:bg-gray-700 rounded-full transition-all duration-300"></label>
-                                        <span class="absolute left-1 top-1 bg-white dark:bg-gray-300 w-4 h-4 rounded-full transition-transform duration-300"></span>
-                                    </div>
-                                    <div>
-                                        <label for="active" class="text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer">
-                                            Categoria ativa
-                                        </label>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                                            Categorias inativas não aparecem nas listas de seleção
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> --}}
 
                         <!-- Botões de ação -->
                         <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -112,12 +86,3 @@
         </div>
     </div>
 </x-app-layout>
-
-<style>
-.toggle-checkbox:checked + label {
-    background-color: #10b981;
-}
-.toggle-checkbox:checked + label + span {
-    transform: translateX(1.5rem);
-}
-</style>

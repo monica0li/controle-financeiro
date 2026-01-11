@@ -52,4 +52,27 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class);
     }
 
+    // ADICIONADO: Relação com categorias
+    public function categories()
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    // ADICIONADO: Relação com formas de pagamento
+    public function paymentMethods()
+    {
+        return $this->hasMany(PaymentMethod::class);
+    }
+
+    // ADICIONADO: Método para buscar categorias ativas
+    public function activeCategories()
+    {
+        return $this->categories()->where('active', true);
+    }
+
+    // ADICIONADO: Método para buscar formas de pagamento ativas
+    public function activePaymentMethods()
+    {
+        return $this->paymentMethods()->where('active', true);
+    }
 }

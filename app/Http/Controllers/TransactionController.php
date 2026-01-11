@@ -100,8 +100,14 @@ class TransactionController extends Controller
                                                    ->count();
         $investCountGeral = $allTransactions->where('is_investment', true)->count();
 
-        $categories = Category::orderBy('name')->get();
-        $paymentMethods = PaymentMethod::orderBy('name')->get();
+        // 🔄 MODIFICADO: Buscar categorias e formas de pagamento apenas do usuário atual
+        $categories = Category::where('user_id', Auth::id())
+            ->orderBy('name')
+            ->get();
+            
+        $paymentMethods = PaymentMethod::where('user_id', Auth::id())
+            ->orderBy('name')
+            ->get();
 
         // Combinar todos os dados para a view
         return view('transactions.index', array_merge(
@@ -130,8 +136,17 @@ class TransactionController extends Controller
      */
     public function create()
     {
-        $categories = Category::where('active', true)->orderBy('name')->get();
-        $paymentMethods = PaymentMethod::where('active', true)->orderBy('name')->get();
+        // 🔄 MODIFICADO: Buscar apenas categorias ativas do usuário atual
+        $categories = Category::where('user_id', Auth::id())
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+            
+        // 🔄 MODIFICADO: Buscar apenas formas de pagamento ativas do usuário atual
+        $paymentMethods = PaymentMethod::where('user_id', Auth::id())
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
     
         return view('transactions.create', compact(
             'categories',
@@ -166,9 +181,36 @@ class TransactionController extends Controller
 
             // Validações específicas por tipo
             if ($originalType === 'saida' && !$isInvestment) {
-                // Apenas para SAÍDAS NORMAIS (não investimentos) - categoria obrigatória
-                $validationRules['category_id'] = 'required|exists:categories,id';
-                $validationRules['payment_method_id'] = 'required|exists:payment_methods,id';
+                // 🔄 MODIFICADO: Validar se a categoria pertence ao usuário
+                $validationRules['category_id'] = [
+                    'required',
+                    'exists:categories,id',
+                    function ($attribute, $value, $fail) {
+                        $category = Category::where('id', $value)
+                            ->where('user_id', Auth::id())
+                            ->first();
+                            
+                        if (!$category) {
+                            $fail('A categoria selecionada é inválida ou não pertence a você.');
+                        }
+                    }
+                ];
+                
+                // 🔄 MODIFICADO: Validar se a forma de pagamento pertence ao usuário
+                $validationRules['payment_method_id'] = [
+                    'required',
+                    'exists:payment_methods,id',
+                    function ($attribute, $value, $fail) {
+                        $paymentMethod = PaymentMethod::where('id', $value)
+                            ->where('user_id', Auth::id())
+                            ->first();
+                            
+                        if (!$paymentMethod) {
+                            $fail('A forma de pagamento selecionada é inválida ou não pertence a você.');
+                        }
+                    }
+                ];
+                
                 $validationRules['installments'] = 'nullable|integer|min:1|max:24';
                 $validationRules['is_recurring'] = 'sometimes|boolean';
 
@@ -231,7 +273,17 @@ class TransactionController extends Controller
 
             // Adicionar categoria (pode ser null para entradas/investimentos)
             if ($originalType === 'saida' && !$isInvestment && isset($validated['category_id'])) {
-                // Apenas para saídas normais, usar a categoria fornecida
+                // 🔄 MODIFICADO: Verificar se a categoria pertence ao usuário
+                $category = Category::where('id', $validated['category_id'])
+                    ->where('user_id', Auth::id())
+                    ->first();
+                    
+                if (!$category) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['category_id' => 'Categoria inválida ou não pertence a você.']);
+                }
+                
                 $transactionData['category_id'] = $validated['category_id'];
             } else {
                 // Para entradas e investimentos, definir como null
@@ -239,7 +291,22 @@ class TransactionController extends Controller
             }
 
             // Adicionar forma de pagamento (pode ser null)
-            $transactionData['payment_method_id'] = $validated['payment_method_id'] ?? null;
+            if (isset($validated['payment_method_id'])) {
+                // 🔄 MODIFICADO: Verificar se a forma de pagamento pertence ao usuário
+                $paymentMethod = PaymentMethod::where('id', $validated['payment_method_id'])
+                    ->where('user_id', Auth::id())
+                    ->first();
+                    
+                if (!$paymentMethod) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['payment_method_id' => 'Forma de pagamento inválida ou não pertence a você.']);
+                }
+                
+                $transactionData['payment_method_id'] = $validated['payment_method_id'];
+            } else {
+                $transactionData['payment_method_id'] = null;
+            }
 
             // Definir valores padrão para outros campos
             $transactionData['installments'] = $validated['installments'] ?? 1;
@@ -364,8 +431,17 @@ class TransactionController extends Controller
         $transaction = Transaction::where('user_id', Auth::id())
             ->findOrFail($id);
             
-        $categories = Category::where('active', true)->orderBy('name')->get();
-        $paymentMethods = PaymentMethod::where('active', true)->orderBy('name')->get();
+        // 🔄 MODIFICADO: Buscar apenas categorias ativas do usuário atual
+        $categories = Category::where('user_id', Auth::id())
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+            
+        // 🔄 MODIFICADO: Buscar apenas formas de pagamento ativas do usuário atual
+        $paymentMethods = PaymentMethod::where('user_id', Auth::id())
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
         
         return view('transactions.edit', compact('transaction', 'categories', 'paymentMethods'));
     }
