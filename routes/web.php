@@ -89,4 +89,27 @@ Route::get('/test-db', function() {
         return "❌ Erro na conexão: " . $e->getMessage();
     }
 });
+
+Route::get('/debug', function() {
+    $checks = [
+        'PHP Version' => phpversion(),
+        'Laravel Version' => app()->version(),
+        'App Key Set' => config('app.key') ? '✅ Yes' : '❌ No',
+        'Environment' => app()->environment(),
+        'Debug Mode' => config('app.debug') ? 'On' : 'Off',
+        'Storage Writable' => is_writable(storage_path()) ? '✅' : '❌',
+        'Cache Writable' => is_writable(base_path('bootstrap/cache')) ? '✅' : '❌',
+    ];
+    
+    // Test database
+    try {
+        \DB::connection()->getPdo();
+        $checks['Database'] = '✅ Connected';
+        $checks['Database Name'] = \DB::connection()->getDatabaseName();
+    } catch (\Exception $e) {
+        $checks['Database'] = '❌ Error: ' . $e->getMessage();
+    }
+    
+    return $checks;
+});
 require __DIR__.'/auth.php';
