@@ -6,6 +6,24 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\PaymentMethodsController;
 
+Route::get('/', function() {
+    return "✅ Laravel está funcionando!";
+});
+
+Route::get('/debug', function() {
+    return [
+        'status' => 'ok',
+        'php_version' => phpversion(),
+        'laravel_version' => app()->version(),
+        'app_key' => config('app.key') ? 'Set' : 'Missing',
+        'files' => [
+            'index_exists' => file_exists(public_path('index.php')) ? '✅' : '❌',
+            'htaccess_exists' => file_exists(public_path('.htaccess')) ? '✅' : '❌',
+            'storage_writable' => is_writable(storage_path()) ? '✅' : '❌',
+        ]
+    ];
+});
+
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('transactions.index');

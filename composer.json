@@ -74,6 +74,10 @@
         "post-install-cmd": [
             "@php artisan storage:link",
             "@php scripts/init.sh"
+        ],
+        "start": [
+        "@php artisan migrate --force",
+        "bash start-render.sh"
         ]
     },
     "extra": {
