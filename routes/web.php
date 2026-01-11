@@ -7,6 +7,11 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\PaymentMethodsController;
 
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('transactions.index');
+    }
+    
+    // Se não estiver autenticado, redireciona para login
     return redirect()->route('login');
 });
 
@@ -23,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route('transactions.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
